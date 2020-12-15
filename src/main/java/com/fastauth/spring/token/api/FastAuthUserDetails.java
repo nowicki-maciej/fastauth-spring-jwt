@@ -8,14 +8,20 @@ import java.util.List;
 
 public class FastAuthUserDetails implements UserDetails {
 
+	private final Long id;
 	private final String username;
 	private final String password;
 	private final List<? extends GrantedAuthority> authorities;
 
-	public FastAuthUserDetails(String username, String password, List<? extends GrantedAuthority> authorities) {
+	public FastAuthUserDetails(Long id, String username, String password, List<? extends GrantedAuthority> authorities) {
+		this.id = id;
 		this.username = username;
 		this.password = password;
 		this.authorities = authorities;
+	}
+
+	public Long getId() {
+		return id;
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package com.fastauth.spring.token;
 
 import com.fastauth.spring.token.api.FastAuthTokenService;
+import com.fastauth.spring.token.resolver.CurrentUserIdResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -16,16 +17,19 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Import(FastAuthServicesConfig.class)
-public abstract class FastAuthConfig extends WebSecurityConfigurerAdapter {
+public abstract class FastAuthConfig extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
 
 	private final UserDetailsService userDetailsService;
 	private final FastAuthTokenService fastAuthTokenService;
@@ -54,6 +58,11 @@ public abstract class FastAuthConfig extends WebSecurityConfigurerAdapter {
 		http.authorizeRequests().anyRequest().authenticated();
 
 		http.addFilter(new FastAuthJWTAuthorizationFilter(authenticationManager(), fastAuthTokenService));
+	}
+
+	@Override
+	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+		resolvers.add(new CurrentUserIdResolver());
 	}
 
 	@Bean(BeanIds.AUTHENTICATION_MANAGER)

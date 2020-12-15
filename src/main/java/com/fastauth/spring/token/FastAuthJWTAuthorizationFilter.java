@@ -61,7 +61,7 @@ class FastAuthJWTAuthorizationFilter extends BasicAuthenticationFilter {
 				.collect(toList());
 
 		return new UsernamePasswordAuthenticationToken(
-				new FastAuthUserDetails(token.getSubject(), null, authorities),
+				new FastAuthUserDetails(token.getUserId(), token.getSubject(), null, authorities),
 				null,
 				authorities
 		);

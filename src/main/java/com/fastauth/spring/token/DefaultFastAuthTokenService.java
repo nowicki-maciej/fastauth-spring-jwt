@@ -2,6 +2,7 @@ package com.fastauth.spring.token;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.fastauth.spring.token.api.Claims;
 import com.fastauth.spring.token.api.FastAuthToken;
 import com.fastauth.spring.token.api.FastAuthTokenService;
 import com.fastauth.spring.token.api.FastAuthUserDetails;
@@ -10,8 +11,6 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.Date;
 
 class DefaultFastAuthTokenService implements FastAuthTokenService {
-
-	private static final String CLAIM_AUTHORITIES = "authorities";
 
 	private final Algorithm cipherAlgorithm;
 	private final long tokenExpirationTime;
@@ -30,7 +29,8 @@ class DefaultFastAuthTokenService implements FastAuthTokenService {
 		String token = JWT.create()
 				.withSubject(userDetails.getUsername())
 				.withExpiresAt(new Date(System.currentTimeMillis() + tokenExpirationTime))
-				.withArrayClaim(CLAIM_AUTHORITIES, authoritiesArray)
+				.withArrayClaim(Claims.AUTHORITIES, authoritiesArray)
+				.withClaim(Claims.USER_ID, userDetails.getId())
 				.sign(cipherAlgorithm);
 
 		return new FastAuthToken(token);

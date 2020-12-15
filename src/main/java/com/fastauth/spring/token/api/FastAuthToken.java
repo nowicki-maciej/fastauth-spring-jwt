@@ -15,7 +15,11 @@ public class FastAuthToken {
 	}
 
 	public List<String> getAuthorities() {
-		return getDecoded().getClaim("authorities").asList(String.class);
+		return getDecoded().getClaim(Claims.AUTHORITIES).asList(String.class);
+	}
+
+	public Long getUserId() {
+		return getDecoded().getClaim(Claims.USER_ID).asLong();
 	}
 
 	public String getSubject() {
