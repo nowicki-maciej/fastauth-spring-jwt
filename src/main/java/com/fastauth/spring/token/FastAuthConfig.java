@@ -2,6 +2,10 @@ package com.fastauth.spring.token;
 
 import com.fastauth.spring.token.api.FastAuthTokenService;
 import com.fastauth.spring.token.resolver.CurrentUserIdResolver;
+import com.fastauth.spring.token.user.FastAuthUserDetailsService;
+import com.fastauth.spring.token.user.UserResolver;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -14,8 +18,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -31,17 +35,13 @@ import java.util.List;
 @Import(FastAuthServicesConfig.class)
 public abstract class FastAuthConfig extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
 
-	private final UserDetailsService userDetailsService;
-	private final FastAuthTokenService fastAuthTokenService;
-
-	public FastAuthConfig(UserDetailsService userDetailsService, FastAuthTokenService fastAuthTokenService) {
-		this.userDetailsService = userDetailsService;
-		this.fastAuthTokenService = fastAuthTokenService;
-	}
+	@Autowired
+	private FastAuthTokenService fastAuthTokenService;
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
+		auth.userDetailsService(fastAuthUserDetailsService())
+				.passwordEncoder(passwordEncoder());
 	}
 
 	@Override
@@ -71,7 +71,22 @@ public abstract class FastAuthConfig extends WebSecurityConfigurerAdapter implem
 		return super.authenticationManager();
 	}
 
+	@Bean
+	@ConditionalOnMissingBean
+	FastAuthUserDetailsService fastAuthUserDetailsService() {
+		return new FastAuthUserDetailsService(userResolver());
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
 	protected abstract void requestConfiguration(HttpSecurity http) throws Exception;
+
+	@Bean
+	protected abstract UserResolver userResolver();
 
 	private static class UnauthorizedHandler implements AuthenticationEntryPoint {
 
